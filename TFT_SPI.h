@@ -1,6 +1,7 @@
 //------------------------------------------------------------------------
+// TFT_SPI.h
+//  Management of an SPI connection to a TFT screen
 // Copyright(c) 2024 Dad Design.
-//      Gestion d'une liaison SP vers un ecran 
 //------------------------------------------------------------------------
 #pragma once
 #include "daisy_seed.h"
@@ -10,144 +11,140 @@
 #include "../UserConfig.h"
 
 // TFT Generic commands
-#define TFT_NOP     0x00
-#define TFT_SWRST   0x01
+#define TFT_NOP     0x00    // No operation
+#define TFT_SWRST   0x01    // Software reset
 
-#define TFT_INVOFF  0x20
-#define TFT_INVON   0x21
+#define TFT_INVOFF  0x20    // Disable inversion
+#define TFT_INVON   0x21    // Enable inversion
 
-#define TFT_DISPOFF 0x28
-#define TFT_DISPON  0x29
+#define TFT_DISPOFF 0x28    // Turn display off
+#define TFT_DISPON  0x29    // Turn display on
 
-#define TFT_CASET   0x2A
-#define TFT_RASET   0x2B
-#define TFT_RAMWR   0x2C
+#define TFT_CASET   0x2A    // Set column address
+#define TFT_RASET   0x2B    // Set row address
+#define TFT_RAMWR   0x2C    // Write to display RAM
 
-#define TFT_MADCTL  0x36
-#define TFT_MAD_MY  0x80
-#define TFT_MAD_MX  0x40
-#define TFT_MAD_MV  0x20
-#define TFT_MAD_ML  0x10
-#define TFT_MAD_BGR 0x08
-#define TFT_MAD_MH  0x04
-#define TFT_MAD_RGB 0x00
-
+#define TFT_MADCTL  0x36    // Memory access control
+#define TFT_MAD_MY  0x80    // Row address order
+#define TFT_MAD_MX  0x40    // Column address order
+#define TFT_MAD_MV  0x20    // Row/Column exchange
+#define TFT_MAD_ML  0x10    // Vertical refresh order
+#define TFT_MAD_BGR 0x08    // Blue-Green-Red pixel order
+#define TFT_MAD_MH  0x04    // Horizontal refresh order
+#define TFT_MAD_RGB 0x00    // Red-Green-Blue pixel order
 
 using namespace daisy;
 extern DaisySeed hw;
 
 enum class SPIMode {
-    Mode0,
-    Mode1,
-    Mode2,
-    Mode3
+    Mode0, // SPI Mode 0
+    Mode1, // SPI Mode 1
+    Mode2, // SPI Mode 2
+    Mode3  // SPI Mode 3
 };
 
-enum class Rotation{
-    Degre_0,
-    Degre_90,
-    Degre_180,
-    Degre_270
+enum class Rotation {
+    Degre_0,     // 0-degree rotation
+    Degre_90,    // 90-degree rotation
+    Degre_180,   // 180-degree rotation
+    Degre_270    // 270-degree rotation
 };
 
-// Configuration des GPIO utilisés
+// Configuration of GPIOs used
 #define _TFT_SPI_PORT SpiHandle::Config::Peripheral::TFT_SPI_PORT
 #define _TFT_SPI_MODE SPIMode::TFT_SPI_MODE
 
-// Configuration des GPIO utilisés
-#define _TFT_MOSI seed::TFT_MOSI
-#define _TFT_SCLK seed::TFT_SCLK
-#define _TFT_DC   seed::TFT_DC
-#define _TFT_RST  seed::TFT_RST 
+// GPIO configurations for TFT
+#define _TFT_MOSI seed::TFT_MOSI  // MOSI pin
+#define _TFT_SCLK seed::TFT_SCLK  // Clock pin
+#define _TFT_DC   seed::TFT_DC    // Data/Command pin
+#define _TFT_RST  seed::TFT_RST   // Reset pin
+
 namespace DadGFX {
+
 //***********************************************************************************
 // TFT_SPI
-//  Gestion de la liaison SPI
+//  SPI management for communication with the TFT screen
 //*********************************************************************************** 
 class TFT_SPI {
     public :
 
-	// --------------------------------------------------------------------------
-	// Initialisation du SPI
-    void Init_TFT_SPI();
-    
     // --------------------------------------------------------------------------
-	// Initialisation
+    // Initialize SPI communication
+    void Init_TFT_SPI();
+
+    // --------------------------------------------------------------------------
+    // Initialize the TFT screen
     void Initialise();
 
     // --------------------------------------------------------------------------
-	// Modification de l'orientation de l'écran
+    // Change the screen orientation
     void setTFTRotation(Rotation r);
-    
+
     // --------------------------------------------------------------------------
-    // Emission d'une commande
-    inline void SendCommand(uint8_t cmd){
-        m_dc.Write(false);
-        m_spi.BlockingTransmit(&cmd, 1);
+    // Send a command to the TFT screen
+    inline void SendCommand(uint8_t cmd) {
+        m_dc.Write(false);  // Set DC pin to command mode
+        m_spi.BlockingTransmit(&cmd, 1); // Transmit the command
     }
 
     // --------------------------------------------------------------------------
-    // Emission d'une donnée
-    inline void SendData(uint8_t Data){
-        m_dc.Write(true);
-        m_spi.BlockingTransmit(&Data, 1);
+    // Send a single data byte to the TFT screen
+    inline void SendData(uint8_t Data) {
+        m_dc.Write(true);  // Set DC pin to data mode
+        m_spi.BlockingTransmit(&Data, 1); // Transmit the data
     }
 
     // --------------------------------------------------------------------------
-    // Emission d'un bloc de données
+    // Send a block of data to the TFT screen
     inline void SendData(uint8_t* buff, size_t size) {
-        m_dc.Write(true);
-        m_spi.BlockingTransmit(buff, size);
+        m_dc.Write(true);  // Set DC pin to data mode
+        m_spi.BlockingTransmit(buff, size); // Transmit the data block
     }
 
     // --------------------------------------------------------------------------
-    // Emission d'une commande en mode DMA
-    inline void SendDMACommand(uint8_t *cmd, SpiHandle::EndCallbackFunctionPtr end_callback=NULL, void* callback_context=NULL)
-    {
-        m_dc.Write(false);
-        m_spi.DmaTransmit(cmd, 1, NULL, end_callback, callback_context);
-    }
-    
-    // --------------------------------------------------------------------------
-    // Emission d'un bloc de données en mode DMA
-    inline void SendDMAData(uint8_t* buff, size_t size, SpiHandle::EndCallbackFunctionPtr end_callback=NULL, void* callback_context=NULL)
-    {   
-        m_dc.Write(true);
-        m_spi.DmaTransmit(buff, size, NULL, end_callback, callback_context);
+    // Send a command using DMA (non-blocking)
+    inline void SendDMACommand(uint8_t *cmd, SpiHandle::EndCallbackFunctionPtr end_callback = NULL, void* callback_context = NULL) {
+        m_dc.Write(false);  // Set DC pin to command mode
+        m_spi.DmaTransmit(cmd, 1, NULL, end_callback, callback_context); // Transmit command using DMA
     }
 
     // --------------------------------------------------------------------------
-    // Delay en mimisecondes    
-    inline void Delay(uint32_t msTime){
-        System::Delay(msTime);
-    }
-    
-    // --------------------------------------------------------------------------
-    // Positionnement de la la broche Data/Command    
-    inline void setDC(){
-        m_dc.Write(true);       
-    }
-    inline void resetDC(){
-        m_dc.Write(false);     
+    // Send a block of data using DMA (non-blocking)
+    inline void SendDMAData(uint8_t* buff, size_t size, SpiHandle::EndCallbackFunctionPtr end_callback = NULL, void* callback_context = NULL) {   
+        m_dc.Write(true);  // Set DC pin to data mode
+        m_spi.DmaTransmit(buff, size, NULL, end_callback, callback_context); // Transmit data block using DMA
     }
 
     // --------------------------------------------------------------------------
-    // Positionnement de la la broche Reset
-    inline void setRST(){
-        m_reset.Write(true);       
+    // Delay in milliseconds
+    inline void Delay(uint32_t msTime) {
+        System::Delay(msTime); // Use system delay
     }
-    
-    inline void resetRST(){
-        m_reset.Write(true);       
-    }
-    
+
     // --------------------------------------------------------------------------
-    // Données de la classe    
+    // Control the Data/Command pin
+    inline void setDC() {
+        m_dc.Write(true);  // Set DC pin to high (data mode)
+    }
+    inline void resetDC() {
+        m_dc.Write(false); // Set DC pin to low (command mode)
+    }
+
+    // --------------------------------------------------------------------------
+    // Control the Reset pin
+    inline void setRST() {
+        m_reset.Write(true);  // Set Reset pin to high (inactive)
+    }
+    inline void resetRST() {
+        m_reset.Write(false); // Set Reset pin to low (active)
+    }
+
     protected :
-    SpiHandle           m_spi;
-    SpiHandle::Config   m_spi_config;
-    
-    GPIO                m_reset;
-    GPIO                m_dc;
+    SpiHandle           m_spi;         // SPI handle for communication
+    SpiHandle::Config   m_spi_config;  // SPI configuration
+
+    GPIO                m_reset;       // GPIO for Reset pin
+    GPIO                m_dc;          // GPIO for Data/Command pin
 };
 } // DadGFX
