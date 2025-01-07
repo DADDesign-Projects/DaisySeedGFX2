@@ -15,20 +15,22 @@
 //====================================================================================
 
 #include "GFX.h"
-
 namespace DadGFX {
 
 //***********************************************************************************
 // CFont
 // Character font management
-// Using font structuring from Adafruit-GFX-Library
-// This allows leveraging conversion tools (e.g., https://rop.nl/truetype2gfx/)
+//
+// Fonts can be generated using the TTF2Bitmap tool. 
+// See https://github.com/DADDesign-Projects/TrueType-to-Bitmap-Converter
+//
 //***********************************************************************************
 
 // --------------------------------------------------------------------------
-// Constructor
-cFont::cFont(const GFXfont *pFont)
+// Class Initalisation
+void cFont::Init(const GFXCFont *pFont)
 {
+    
     m_pFont = pFont;         // Pointer to the font descriptor
     m_pTable = pFont->glyph; // Pointer to the glyph descriptor table
 
@@ -55,6 +57,22 @@ cFont::cFont(const GFXfont *pFont)
         pTable++;
     }
 }
+
+// --------------------------------------------------------------------------
+// Constructor for Binary
+cFont::cFont(GFXBinFont *pFont)
+{
+    uint8_t * pData;
+    pData = (uint8_t *) pFont;
+    
+    m_Font.first = pFont->first;
+    m_Font.last = pFont->last;
+    m_Font.yAdvance = pFont->yAdvance;
+    m_Font.bitmap = pData + pFont->bitmap;
+    m_Font.glyph = (GFXglyph *) (pData + pFont->glyph);
+    Init(&m_Font);
+}
+
 
 // --------------------------------------------------------------------------
 // Reads the width of a string

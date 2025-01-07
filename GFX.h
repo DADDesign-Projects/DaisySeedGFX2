@@ -16,6 +16,7 @@
 
 #pragma once // Ensure this file is only included once during compilation
 #include "stdint.h"
+#include "GFXFont.h"
 
 
 namespace DadGFX {
@@ -85,37 +86,25 @@ struct sColor {
 //***********************************************************************************
 // CFont
 // Character font management
-// Using font structuring from Adafruit-GFX-Library
-// This allows leveraging conversion tools (e.g., https://rop.nl/truetype2gfx/)
+//
+// Fonts can be generated using the TTF2Bitmap tool. 
+// See https://github.com/DADDesign-Projects/TrueType-to-Bitmap-Converter
+//
 //***********************************************************************************
-// Character descriptor table
-typedef struct
-{
-    uint16_t bitmapOffset; // Pointer into GFXfont->bitmap
-    uint8_t width;         // Bitmap width in pixels
-    uint8_t height;        // Bitmap height in pixels
-    uint8_t xAdvance;      // Distance to advance cursor (x-axis)
-    int8_t xOffset;        // X offset from cursor position to upper-left corner
-    int8_t yOffset;        // Y offset from cursor position to upper-left corner
-} GFXglyph;
-
-// Font descriptor
-typedef struct
-{
-    uint8_t *bitmap;  // Glyph bitmaps, concatenated
-    GFXglyph *glyph;  // Array of glyph descriptors
-    uint16_t first;   // ASCII range: first character
-    uint16_t last;    // ASCII range: last character
-    uint8_t yAdvance; // Line height (y-axis)
-} GFXfont;
 
 //***********************************************************************************
 // CFont
 class cFont {
 public:
     // --------------------------------------------------------------------------
-    // Constructor
-    cFont(const GFXfont *pFont);
+    // Constructor use for C font
+    cFont(const GFXCFont *pFont){
+        Init(pFont);
+    }
+
+    // --------------------------------------------------------------------------
+    // Constructor use for Binary font
+    cFont(GFXBinFont *pFont);
 
     // --------------------------------------------------------------------------
     // Reads the width of character c
@@ -147,7 +136,7 @@ public:
 
     // --------------------------------------------------------------------------
     // Returns the address of the font descriptor
-    inline const GFXfont *getGFXfont() { return m_pFont; }
+    inline const GFXCFont *getGFXfont() { return m_pFont; }
 
     // --------------------------------------------------------------------------
     // Returns the address of the glyph descriptor table
@@ -164,15 +153,18 @@ public:
     inline const uint8_t *getBitmap(char c){
         return &m_pFont->bitmap[m_pTable[c - m_pFont->first].bitmapOffset];
     }
+protected :
+    void Init(const GFXCFont *pFont);
 
     // --------------------------------------------------------------------------
     // Class data
 protected:
-    const GFXfont   *m_pFont;    // Font descriptor
+    const GFXCFont  *m_pFont;    // Font descriptor
     GFXglyph        *m_pTable;   // Glyph descriptor table
 
     int8_t          m_PosHeight; // Height above the cursor line
     int8_t          m_NegHeight; // Height below the cursor line
+    GFXCFont        m_Font;
 };
 
 //***********************************************************************************

@@ -35,8 +35,7 @@ The library code can be compiled in VS Code within the Daisy Seed development en
 
 Implementation examples can be found in the repository:
 
-- [Demo DaisyGFX ST7735](https://github.com/DADDesign-Projects/DEMO_DaisyGFX_ST7735)
-- [Demo DaisyGFX ST7789](https://github.com/DADDesign-Projects/DEMO_DaisyGFX_ST7789)
+
 
 
  
