@@ -16,6 +16,24 @@
 namespace DadGFX {  
 
 //***********************************************************************************
+// Macro utility
+//***********************************************************************************
+#define DECLARE_DISPLAY(DisplayName)\
+DadGFX::sFIFO_Data   DMA_BUFFER_MEM_SECTION  DisplayName##FIFO;									 /*FIFO pour émission SPI en DMA*/\
+DadGFX::sColor       DSY_SDRAM_BSS           DisplayName##BlocFrame[BLOC_HEIGHT][BLOC_WIDTH];    /* Frame Blocs*/\
+DadGFX::cDisplay 				 			 DisplayName;					                     /* Screen */
+
+#define INIT_DISPLAY(DisplayName) DisplayName.init(&DisplayName##FIFO, &DisplayName##BlocFrame[0][0])
+
+#define DECLARE_LAYER(LayerName, ValWidth, ValHeight) \
+static DadGFX::sColor DSY_SDRAM_BSS __Layer##LayerName[ValWidth][ValHeight]; \
+constexpr int Width##LayerName = ValWidth; \
+constexpr int Height##LayerName = ValHeight;
+
+#define ADD_LAYER(LayerName, PosX, PosY, PosZ) \
+__Display.addLayer(&__Layer##LayerName[0][0], PosX, PosY, Width##LayerName, Height##LayerName, PosZ);
+
+//***********************************************************************************
 // Block size definition based on color depth
 //***********************************************************************************
 #if TFT_COLOR == 16
