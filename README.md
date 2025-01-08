@@ -33,7 +33,7 @@ The library code can be compiled in VS Code within the Daisy Seed development en
 
 ### Examples
 
-Implementation examples can be found in the repository:
+Implementation examples can be found in the repository: https://github.com/DADDesign-Projects/Demo_DaisySeedGFX2
 
 
 
