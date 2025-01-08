@@ -118,7 +118,6 @@ DAD_GFX_ERROR cLayer::setRectangle(uint16_t x, uint16_t y, uint16_t Width, uint1
     return DAD_GFX_ERROR::OK;
 }
 
-
 // --------------------------------------------------------------------------
 // Set a pixel in the layer at (x, y) to the specified color
 DAD_GFX_ERROR cLayer::setPixel(uint16_t x, uint16_t y, const sColor& Color) {
@@ -196,10 +195,12 @@ DAD_GFX_ERROR cLayer::fillRectWithBitmap(
 
     // Adjust BitmapWidth and BitmapHeight to ensure they fit within the display
     if (x0 + BitmapWidth > m_Width) {
-        BitmapWidth = m_Width - x0;
+        //BitmapWidth = m_Width - x0;
+        return DAD_GFX_ERROR::Size_Error;  // Out of bounds 
     }
     if (y0 + BitmapHeight > m_Height) {
-        BitmapHeight = m_Height - y0;
+        //BitmapHeight = m_Height - y0;
+        return DAD_GFX_ERROR::Size_Error;  // Out of bounds 
     }
 
     // -------------------------------------------------------------------------
@@ -349,18 +350,17 @@ void cDisplay::init(sFIFO_Data *pFIFO_Data, sColor* pDitryBlocFrame) {
 //   zPos: Z-order of the layer (stacking order)
 cLayer* cDisplay::addLayer(sColor* pLayerFrame, uint16_t x, uint16_t y, uint16_t Width, uint16_t Height, uint8_t zPos) {
     // Check if the new position is within screen boundaries
-    if(x >= m_Width) x = m_Width-1;
-    if(y >= m_Height) y = m_Height-1;
+    //if(x >= m_Width) x = m_Width-1;
+    //if(y >= m_Height) y = m_Height-1;
 
     cLayer* pNewLayer = new cLayer();
     if (!pNewLayer) {
         return pNewLayer;  // Return nullptr if memory allocation fails
     }
-    pNewLayer->init(this, pLayerFrame, x, y, Width, Height, zPos);
-
+    pNewLayer->init(this, pLayerFrame, 0 , 0, Width, Height, zPos);
     m_TabLayers.push_back(static_cast<cLayerBase*>(pNewLayer));  // Add the layer to the list
-    m_LayersChange = 1;                // Mark layers as changed
-    invalidateRect(x, y, x + Width-1, y + Height -1);
+    m_LayersChange = 1;                                          // Mark layers as changed
+    pNewLayer->moveLayer(x,y);    
     return pNewLayer;
 }
 
