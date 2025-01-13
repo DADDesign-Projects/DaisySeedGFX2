@@ -56,6 +56,12 @@ enum class ORIENTATION {
     Landscape      // Horizontal orientation
 };
 
+// Layer write modes
+enum class DRAW_MODE {
+    Blend,       // Blend layers with transparency
+    Overwrite    // Overwrite completely
+};
+
 //***********************************************************************************
 // Cmd_CASET
 //   SPI Command for column selection
@@ -431,7 +437,13 @@ public:
    
     // -----------------------------------------------------------------------------
     // Erase the layer
-    virtual DAD_GFX_ERROR eraseLayer(const sColor& Color = sColor(0,0,0,255));
+    virtual DAD_GFX_ERROR eraseLayer(const sColor& Color = sColor(0,0,0,0));
+
+    // -----------------------------------------------------------------------------
+    // Set the layer write mode
+    inline void setMode(DRAW_MODE Mode){
+        m_Mode = Mode;    
+    }
 
 protected :
     // --------------------------------------------------------------------------
@@ -450,8 +462,9 @@ protected :
     // Fill a rectangle with either a foreground or background color based on a bitmap
     virtual DAD_GFX_ERROR fillRectWithBitmap(uint16_t x0, uint16_t y0, const uint8_t* pBitmap, uint16_t BitmapWidth, uint16_t BitmapBmpHeight,
                                              const sColor& ForegroundColor, const sColor& BackgroundColor);
-                                             protected :
-    
+
+protected :
+    DRAW_MODE   m_Mode = DRAW_MODE::Blend;
 };
 
 //***********************************************************************************

@@ -64,7 +64,7 @@ DAD_GFX_ERROR cLayer::setRectangle(uint16_t x, uint16_t y, uint16_t Width, uint1
     }
 
     // If the alpha component is zero, rectangle is fully transparent, nothing to draw
-    if (Color.m_A == 0) {
+    if ((Color.m_A == 0) &&  (m_Mode == DRAW_MODE::Blend)) {
         return DAD_GFX_ERROR::OK;  // Operation successful but no modification
     }
 
@@ -77,7 +77,7 @@ DAD_GFX_ERROR cLayer::setRectangle(uint16_t x, uint16_t y, uint16_t Width, uint1
         pFrame = &m_pLayerFrame[((y + indexY) * m_Width) + x];
 
         for (uint16_t indexX = 0; indexX < Width; indexX++) {
-            if (Color.m_A == 255) {
+            if ((Color.m_A == 255) | (m_Mode == DRAW_MODE::Overwrite)) {
                 // Fully opaque color: overwrite the pixel
                 pFrame->m_ARGB = Color.m_ARGB;
             } else {
@@ -131,10 +131,10 @@ DAD_GFX_ERROR cLayer::setPixel(uint16_t x, uint16_t y, const sColor& Color) {
     // Update the pixel color in the frame buffer
     sColor* pFrame = &m_pLayerFrame[(y * m_Width) + x];  // Calculate the address of the pixel
 
-    if (Color.m_A == 0) {
+    if ((Color.m_A == 0) && (m_Mode == DRAW_MODE::Blend)) {
         // Fully transparent color, nothing to update
         return DAD_GFX_ERROR::OK;
-    } else if (Color.m_A == 255) {
+    } else if ((Color.m_A == 255) | (m_Mode == DRAW_MODE::Overwrite)) {
         // Fully opaque color, directly overwrite the pixel
         pFrame->m_ARGB = Color.m_ARGB;
     } else {
@@ -218,8 +218,8 @@ DAD_GFX_ERROR cLayer::fillRectWithBitmap(
             const sColor& Color = (currentByte & 0x80) ? ForegroundColor : BackgroundColor;
 
             // Apply the color with optional alpha blending
-            if (Color.m_A != 0) {  // Skip fully transparent colors
-                if (Color.m_A == 255) {
+            if ((Color.m_A != 0) || (m_Mode == DRAW_MODE::Overwrite)) {  // Skip fully transparent colors
+                if ((Color.m_A == 255) | (m_Mode == DRAW_MODE::Overwrite)) {
                     // Fully opaque color, overwrite directly
                     pFrame->m_ARGB = Color.m_ARGB;
                 } else {
@@ -265,7 +265,12 @@ DAD_GFX_ERROR cLayer::fillRectWithBitmap(
 // -----------------------------------------------------------------------------
 // Erase the layer
 DAD_GFX_ERROR cLayer::eraseLayer(const sColor& Color){
-    return setRectangle(0, 0, m_Width, m_Height, Color);
+    DAD_GFX_ERROR Result;
+    DRAW_MODE OldMode = m_Mode;
+    setMode(DRAW_MODE::Overwrite);
+    Result = setRectangle(0, 0, m_Width, m_Height, Color);
+    setMode(OldMode);
+    return Result;
 }
 
 // --------------------------------------------------------------------------
