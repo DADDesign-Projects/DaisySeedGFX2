@@ -97,7 +97,7 @@
 
 // --------------------------------------------------------------------------
 // Initialisation de l'écran de type ST7735        
-void TFT_SPI::Initialise(){
+void DadGFX::TFT_SPI::Initialise(){
     // Init for 7735R, part 1 (red or green tab)
     // -----------------------------------------
     SendCommand(ST7735_SWRESET);        //  1: Software reset, 0 args, w/delay
