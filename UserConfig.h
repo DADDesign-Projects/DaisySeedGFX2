@@ -13,7 +13,7 @@
 // Display controller type
 #define TFT_CONTROLEUR_TFT  7789  // Use the ILI7789 controller
 //#define TFT_CONTROLEUR_TFT  7735  // Uncomment to use the ILI7735 controller
-#define TEST1 7789               // Test definition, redundant but illustrative
+
 
 //-------------------------------------------------------------------------
 // Color encoding
